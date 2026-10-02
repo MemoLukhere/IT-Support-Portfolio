@@ -1,0 +1,86 @@
+! ============================================================
+! XYZ Company Network - Router Configuration (R1)
+! Based on actual lab implementation
+! Router-on-a-Stick | VLANs 10, 20, 30
+! Addressing: three /26 subnets from 192.168.1.0/24
+! ============================================================
+
+enable
+configure terminal
+
+! ----- Hostname & Basic Security -----
+hostname R1
+no ip domain-lookup
+enable secret Cisco123
+service password-encryption
+banner motd # XYZ Company - Unauthorized access prohibited #
+
+!enable dhcp service on the router in configuration mode  with the command 
+#service dhcp 
+
+! ----- DHCP Pools -----
+ip dhcp excluded-address 192.168.1.1 192.168.1.9
+ip dhcp excluded-address 192.168.1.65 192.168.1.69
+ip dhcp excluded-address 192.168.1.129 192.168.1.133
+
+ip dhcp pool Admin-Pool
+ network 192.168.1.0 255.255.255.192
+ default-router 192.168.1.1
+ dns-server 8.8.8.8 1.1.1.1
+ domain-name Admin.com
+ exit
+
+ip dhcp pool Finance-Pool
+ network 192.168.1.64 255.255.255.192
+ default-router 192.168.1.65
+ dns-server 8.8.8.8 1.1.1.1
+ domain-name Finance.com
+ exit
+
+ip dhcp pool Reception-Pool
+ network 192.168.1.128 255.255.255.192
+ default-router 192.168.1.129
+ dns-server 8.8.8.8 1.1.1.1
+ domain-name Reception.com
+ exit
+
+! ----- Physical Interface -----
+interface GigabitEthernet0/0
+ description Trunk link to Switch S1 (Fa0/1)
+ no shutdown
+ exit
+
+! ----- Subinterfaces (Router-on-a-Stick) -----
+interface GigabitEthernet0/0.10
+ description ADMIN Department - VLAN 10
+ encapsulation dot1Q 10
+ ip address 192.168.1.1 255.255.255.192
+ exit
+
+interface GigabitEthernet0/0.20
+ description FINANCE Department - VLAN 20
+ encapsulation dot1Q 20
+ ip address 192.168.1.65 255.255.255.192
+ exit
+
+interface GigabitEthernet0/0.30
+ description RECEPTION Department - VLAN 30
+ encapsulation dot1Q 30
+ ip address 192.168.1.129 255.255.255.192
+ exit
+
+! ----- Unused interfaces -----
+interface GigabitEthernet0/1
+ description Unused
+ shutdown
+ exit
+
+interface GigabitEthernet0/2
+ description Unused
+ shutdown
+ exit
+
+ip cef
+
+end
+write memory
