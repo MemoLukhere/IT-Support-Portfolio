@@ -1,0 +1,78 @@
+! ============================================================
+! XYZ Company Network - Switch Configuration (S1)
+! Based on actual lab implementation
+! VLANs: 10=ADMIN, 20=FINANCE, 30=RECEPTION
+! Trunk: FastEthernet0/1 → Router R1 Gi0/0
+! ============================================================
+
+enable
+configure terminal
+
+! ----- Hostname & Basic Security -----
+hostname S1
+no ip domain-lookup
+enable secret Cisco123
+service password-encryption
+banner motd # XYZ Company - Unauthorized access prohibited #
+
+! ----- Create VLANs with names -----
+vlan 10
+ name ADMIN
+ exit
+
+vlan 20
+ name FINANCE
+ exit
+
+vlan 30
+ name RECEPTION
+ exit
+
+! ----- Trunk Port to Router -----
+interface FastEthernet0/1
+ description Trunk to Router R1 (Gi0/0)
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20,30
+ no shutdown
+ exit
+
+! ----- ADMIN Department (VLAN 10) -----
+interface range FastEthernet0/2 - 4
+ description ADMIN Department Ports
+ switchport mode access
+ switchport access vlan 10
+ spanning-tree portfast
+ no shutdown
+ exit
+
+! ----- FINANCE Department (VLAN 20) -----
+interface range FastEthernet0/5 - 7
+ description FINANCE Department Ports
+ switchport mode access
+ switchport access vlan 20
+ spanning-tree portfast
+ no shutdown
+ exit
+
+! ----- RECEPTION Department (VLAN 30) -----
+interface range FastEthernet0/8 - 10
+ description RECEPTION Department Ports
+ switchport mode access
+ switchport access vlan 30
+ spanning-tree portfast
+ no shutdown
+ exit
+
+! ----- Unused ports (shutdown for security) -----
+interface range FastEthernet0/11 - 24
+ description Unused - Shutdown
+ shutdown
+ exit
+
+interface range GigabitEthernet0/1 - 2
+ description Unused - Shutdown
+ shutdown
+ exit
+
+end
+write memory
